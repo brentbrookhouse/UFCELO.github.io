@@ -1,8 +1,49 @@
 # Putting Undercard on your website
 
-The web build is in `C:\MMARoguelikeGame\build\undercard-web\`. It's the public build: no Fight Lab
-and no developer testing panel. It's a single-threaded build, so it works on ordinary web hosting
-with no special server settings.
+The game lives at **https://pridefightingchampionships.com/undercard/**.
+
+Your site is the GitHub Pages repository `brentbrookhouse/UFCELO.github.io`. A copy is cloned at
+`C:\UFCELO.github.io`, next to the game project (not inside it). The game sits in that repo's
+`undercard` folder. Everything else on the site (`index.html`, `methodology.html`, `CNAME`) is left alone.
+
+The web build is in `C:\MMARoguelikeGame\build\undercard-web\`. It's the public build (no Fight Lab, no
+developer testing panel) and single-threaded, so GitHub Pages serves it with no special settings.
+
+## Publishing an update (what Claude Code does when you ask)
+
+1. Bump `version` in `data/build.json`, so testers' bug reports show which build they played. The
+   version is in the bottom-right corner of every screen.
+2. Export the web build:
+   ```
+   <console exe> --headless --path . --export-release "Web" build/undercard-web/index.html
+   ```
+3. Get the latest site, so nothing changed on GitHub gets overwritten:
+   ```
+   git -C C:\UFCELO.github.io pull
+   ```
+   (If `C:\UFCELO.github.io` doesn't exist yet: `git clone https://github.com/brentbrookhouse/UFCELO.github.io.git`
+   from `C:\`.)
+4. Copy every file from `build\undercard-web\` into `C:\UFCELO.github.io\undercard\`, replacing the
+   old ones. Don't touch anything outside the `undercard` folder.
+5. Make sure the site root has an empty `.nojekyll` file (it's already there). It tells GitHub Pages
+   to serve the files exactly as they are.
+6. Commit and push from `C:\UFCELO.github.io`:
+   ```
+   git add undercard .nojekyll
+   git commit -m "Update Undercard web build to v0.x.y"
+   git push
+   ```
+7. Wait a minute or two. GitHub Pages usually republishes within 1–2 minutes, occasionally up to
+   about 10. Then open the address above.
+
+## If the new version doesn't show up
+
+- **Browser cache:** the browser may still have the old files. Reload with Ctrl+F5, or open the page
+  in a private window.
+- **Build status:** on github.com, open the UFCELO.github.io repository and click **Actions**. The
+  latest "pages build and deployment" run should have a green tick.
+- **Old saves:** they still load, because saves carry a version number. A save from a newer build
+  shows a message instead of Continue.
 
 ## What's in the folder
 
@@ -14,42 +55,14 @@ with no special server settings.
 | `index.pck` | The game itself: screens, data and fonts (about 2 MB) |
 | `index.audio.worklet.js`, `index.audio.position.worklet.js` | Audio helpers |
 | `index.png`, `index.icon.png`, `index.apple-touch-icon.png` | Loading image and icons |
+| `HOW-TO-UPLOAD.md` | A copy of this guide |
 
-Upload every file. Don't rename any of them.
+The first visit downloads about 40 MB (GitHub Pages compresses it), so it takes a few seconds; after
+that the browser keeps a copy. Each player's save lives in their own browser. Clearing browser data,
+or using a private window, removes it. Their profile (achievements, unlocks, hall of fame) is saved the same way. Testers can use Settings → Export save to send you their run and profile in one file.
 
-## Uploading to a subpage (for example pridefightingchampionships.com/undercard)
+## Other hosting
 
-1. Open your web host's file manager, or connect with an FTP program such as FileZilla.
-2. Go to your site's main folder. It's often called `public_html`, `www` or `htdocs`.
-3. Make a new folder named `undercard`.
-4. Open the new folder and upload every file from `build\undercard-web\` into it.
-5. Visit `https://pridefightingchampionships.com/undercard/` in a browser. You should see the
-   loading bar, then the UNDERCARD title screen.
-
-The first visit downloads about 40 MB, so it takes a few seconds. After that the browser keeps a copy.
-
-## If something doesn't work
-
-- **A blank page or "failed to load .wasm":** some hosts send `.wasm` files with the wrong type.
-  In the file manager, look for a file called `.htaccess` in the `undercard` folder (create it if
-  it's missing) and add this line:
-
-  ```
-  AddType application/wasm .wasm
-  ```
-
-- **Very slow first load:** turning on "gzip" or "compression" in your host's settings shrinks the
-  download to about a quarter. It's optional.
-- **Saves:** each player's save lives in their own browser. Clearing browser data, or using a
-  private window, removes it. Testers can use Settings → Export save to send you their save.
-
-## Making a new web build later
-
-Ask Claude Code to "export the web build". It runs:
-
-```
-<console exe> --headless --path . --export-release "Web" build/undercard-web/index.html
-```
-
-Then upload the new files over the old ones. Bump `version` in `data/build.json` first, so you
-can tell builds apart in bug reports. The version shows in the bottom-right corner of every screen.
+To put it on an ordinary web host instead, upload every file from `build\undercard-web\` into a folder
+on the host with its file manager or FTP. If the page stays blank with an error about `.wasm`, add
+`AddType application/wasm .wasm` to a `.htaccess` file in that folder.
